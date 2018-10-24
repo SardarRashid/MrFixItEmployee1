@@ -28,6 +28,7 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.awt.font.TextAttribute;
 
+import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -107,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
 
+                //Set Disable Button Sign In If is Processing
+                btnSignIn.setEnabled(false);
 
                 //Check Validation
 
@@ -125,10 +128,15 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
+                final SpotsDialog waitingDialog = new SpotsDialog(MainActivity.this);
+                waitingDialog.show();
+
+
                 //Login
                 auth.signInWithEmailAndPassword(edtEmail.getText().toString(), edtPassword.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
+                        waitingDialog.dismiss();
                         startActivity(new Intent(MainActivity.this, Welcome.class));
                         finish();
 
@@ -136,14 +144,19 @@ public class MainActivity extends AppCompatActivity {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(rootLyout, "Failed " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        waitingDialog.dismiss();
+                        Snackbar.make(rootLyout, "Failed " + e.getMessage(), Snackbar.LENGTH_SHORT)
+                                .show();
+
+                        //Active button
+                        btnSignIn.setEnabled(true);
                     }
                 });
 
             }
 
         });
-        dialog.setNegativeButton("CANCLE", new DialogInterface.OnClickListener() {
+        dialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -177,7 +190,6 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();
-
 
                             //Check Validation
 
@@ -223,21 +235,23 @@ public class MainActivity extends AppCompatActivity {
                                     user.setPhone(edtPhone.getText().toString());
                                     user.setPassword(edtPassword.getText().toString());
 
-                                    //Use email to Key
-                                    users.child(user.getEmail()).setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    //Use Uid as Key
+                                    users.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             Snackbar.make(rootLyout, "Register Success fully ...", Snackbar.LENGTH_SHORT).show();
+
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Snackbar.make(rootLyout, "Failed " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                                            Snackbar.make(rootLyout, "Failed " + e.getMessage(), Snackbar.LENGTH_SHORT)
+                                                    .show();
                                         }
                                     });
 
-
                                 }
+
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
