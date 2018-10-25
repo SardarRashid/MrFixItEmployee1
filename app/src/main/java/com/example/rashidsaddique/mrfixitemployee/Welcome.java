@@ -139,6 +139,19 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
                     robotMarker.setPosition(newPos);
                     robotMarker.setAnchor(0.0f,0.0f);
                     robotMarker.setRotation(getBearing(startPosition,newPos));
+
+
+                    //Code for blinking Car Problem...
+
+
+                    float rotation = getBearing (startPosition, newPos);
+                    if (robotMarker.getRotation()>rotation)
+                        robotMarker.setRotation(robotMarker.getRotation()
+                                - valueAnimator.getAnimatedFraction());
+                    else
+                        robotMarker.setRotation(robotMarker.getRotation()
+                                +valueAnimator.getAnimatedFraction());
+
                     mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
                             new CameraPosition.Builder()
                             .target(newPos)
