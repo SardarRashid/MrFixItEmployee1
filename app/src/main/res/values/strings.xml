@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Mr Fix It Employee</string>
     <string name="title_activity_welcome">Map</string>
+    <string name="google_direction_api">AIzaSyBLW8gbRvsMUoKhZwc938GqGKB8o9JO44w</string>
 </resources>
