@@ -30,9 +30,14 @@ import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -104,8 +109,8 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
     private Handler handler;
     private LatLng startPosition, endPosition,currentPosition;
     private int index,next;
-    private Button btnGo;
-    private EditText edtPlace;
+    //private Button btnGo;
+    private PlaceAutocompleteFragment places;
     private String destination;
     private PolylineOptions polylineOptions,blackPolyLineOptions;
     private Polyline blackPolyLine,greyPolyLine;
@@ -220,16 +225,31 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
         });
 
         PolyLineList = new ArrayList<>();
-        btnGo = (Button) findViewById(R.id.btnGo);
-        edtPlace = (EditText) findViewById(R.id.edtPlace);
 
-        btnGo.setOnClickListener(new View.OnClickListener() {
+
+        //Places Api
+
+        places = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        places.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onClick(View v) {
-                destination = edtPlace.getText().toString();
-                destination = destination.replace("","+"); //Replace Space With + For Fetch Data
-                Log.d("Mr Fix It",destination);
-                getDirection();
+            public void onPlaceSelected(Place place) {
+                if (location_switch.isChecked())
+                {
+                    destination = place.getAddress().toString();
+                    destination = destination.replace("","+");
+
+                    getDirection();
+                }
+                else {
+                    Toast.makeText(Welcome.this, "Please change your status to ONLINE", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(Welcome.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+
             }
         });
 
