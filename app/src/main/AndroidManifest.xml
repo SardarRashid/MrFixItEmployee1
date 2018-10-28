@@ -34,7 +34,7 @@
 
         <activity
             android:name=".Welcome"
-            android:label="@string/title_activity_welcome"></activity>
+            android:label="@string/title_activity_welcome" />
     </application>
 
 </manifest>

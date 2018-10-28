@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         //Init FireBase
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
-        users = db.getReference("Users");
+        users = db.getReference("Employees");
 
 
         //Init View
@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("SIGN IN ");
         dialog.setMessage("Please Use Email to Sign In");
-
         LayoutInflater inflater = LayoutInflater.from(this);
         View login_layout  = inflater.inflate(R.layout.layout_login, null);
 

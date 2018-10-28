@@ -92,7 +92,7 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
     private static int FATEST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
 
-    DatabaseReference employees;
+    DatabaseReference ref;
     GeoFire geoFire;
 
     Marker mCurrent;
@@ -200,29 +200,25 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
 
 
         //Init View
-        location_switch = (MaterialAnimatedSwitch)findViewById(R.id.location_switch);
+        location_switch = (MaterialAnimatedSwitch) findViewById(R.id.location_switch);
         location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(boolean isOnline) {
-                if(isOnline)
-                {
+                if (isOnline) {
                     startLocationUpdates();
                     displayLocation();
-                    Snackbar.make(mapFragment.getView(),"You are Online",Snackbar.LENGTH_SHORT)
-                            .show();
-                }
-                else {
+                    Snackbar.make(mapFragment.getView(), "You are Online", Snackbar.LENGTH_SHORT).show();
+                } else {
                     stopLocationUpdates();
                     mCurrent.remove();
                     mMap.clear();
                     handler.removeCallbacks(drawPathRunnable);
                     Snackbar.make(mapFragment.getView(), "You are Off Line", Snackbar.LENGTH_SHORT).show();
                 }
-
-
             }
 
         });
+
 
         PolyLineList = new ArrayList<>();
 
@@ -255,8 +251,8 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
 
         //Geo Fire
 
-        employees = FirebaseDatabase.getInstance().getReference("Employees");
-        geoFire = new GeoFire(employees);
+        ref = FirebaseDatabase.getInstance().getReference("Employees");
+        geoFire = new GeoFire(ref);
 
         setUpLocation();
         mServices = Common.getGoogleAPI();
@@ -511,19 +507,18 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
                     public void onComplete(String key, DatabaseError error) {
 
                         //Add marker
-                        if(mCurrent != null) {
+                        if(mCurrent != null)
                             mCurrent.remove(); //Remove Already Marker
                             mCurrent = mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(latitude, longitude))
-                                    .title("Your Location"));
+                                    .title("You"));
 
 
                             //Move Camera to This position
 
                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15.0f));
-
-                        }
-
+                            //Draw animation rotate marker
+                        rotateMarker(mCurrent,-360,mMap);
                     }
                 });
             }
@@ -549,7 +544,7 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void run() {
                 long elapsed = SystemClock.uptimeMillis() - start;
-                float t =interpolator.getInterpolation((float)elapsed/duration);
+                float t = interpolator.getInterpolation((float)elapsed/duration);
                 float rot = t*i+(1-t)*startRotation;
                 mCurrent.setRotation(-rot > 180?rot/2:rot);
 
@@ -587,6 +582,8 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        displayLocation();
+        startLocationUpdates();
 
     }
 
