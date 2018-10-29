@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import com.example.rashidsaddique.mrfixitemployee.Common.Common;
 import com.example.rashidsaddique.mrfixitemployee.Model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         //Init FireBase
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
-        users = db.getReference("Employees");
+        users = db.getReference(Common.employees_tbl);
 
 
         //Init View

@@ -251,7 +251,7 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
 
         //Geo Fire
 
-        ref = FirebaseDatabase.getInstance().getReference("Employees");
+        ref = FirebaseDatabase.getInstance().getReference(Common.employees_location_tbl);
         geoFire = new GeoFire(ref);
 
         setUpLocation();
@@ -513,7 +513,6 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
                                     .position(new LatLng(latitude, longitude))
                                     .title("You"));
 
-
                             //Move Camera to This position
 
                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15.0f));
@@ -529,7 +528,6 @@ public class Welcome extends FragmentActivity implements OnMapReadyCallback,
         }
 
     }
-
 
     private void rotateMarker(final Marker mCurrent, final float i, GoogleMap mMap) {
 
