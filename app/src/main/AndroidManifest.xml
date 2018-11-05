@@ -32,24 +32,23 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".Welcome"
-            android:label="@string/title_activity_welcome" />
-        <activity android:name=".CustommerCall"></activity>
-
+        <activity android:name=".CustommerCall" />
 
         <service android:name=".Service.MyFirebaseIdService">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT">
-                </action>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"></action>
             </intent-filter>
         </service>
         <service android:name=".Service.MyFirebaseMessaging">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT">
-                </action>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"></action>
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".EmployeeHome"
+            android:label="@string/title_activity_employee_home"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

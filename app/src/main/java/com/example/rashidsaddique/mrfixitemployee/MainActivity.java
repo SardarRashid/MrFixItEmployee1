@@ -1,11 +1,13 @@
 package com.example.rashidsaddique.mrfixitemployee;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,14 +15,18 @@ import android.support.v7.widget.ActivityChooserView;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.rashidsaddique.mrfixitemployee.Common.Common;
 import com.example.rashidsaddique.mrfixitemployee.Model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -44,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseDatabase db;
     DatabaseReference users;
+
+    TextView txt_forget_pwd;
+
 
 
     @Override
@@ -70,6 +79,14 @@ public class MainActivity extends AppCompatActivity {
         btnRegister = (Button) findViewById(R.id.btnRegister);
         btnSignIn = (Button) findViewById(R.id.btnSignIn);
         rootLyout = (RelativeLayout) findViewById(R.id.rootLayout);
+        txt_forget_pwd= (TextView) findViewById(R.id.txt_forget_password);
+        txt_forget_pwd.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                ShowDialogForgotPwd();
+                return false;
+            }
+        });
 
         //Event
         btnRegister.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +102,59 @@ public class MainActivity extends AppCompatActivity {
                 showLoginDialog();
             }
         });
+
+    }
+
+    private void ShowDialogForgotPwd() {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setTitle("FORGET PASSWORD");
+        alertDialog.setMessage("Please enter your email address");
+
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        View forget_pwd_layout = inflater.inflate(R.layout.layout_forget_pwd,null);
+
+        final MaterialEditText edtEmail = (MaterialEditText)forget_pwd_layout.findViewById(R.id.edtEmail);
+        alertDialog.setView(forget_pwd_layout);
+
+
+        //Set Button
+        alertDialog.setPositiveButton("RESET", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialogInterface, int which) {
+                final SpotsDialog waitingDialog = new SpotsDialog(MainActivity.this);
+                waitingDialog.show();
+
+                auth.sendPasswordResetEmail(edtEmail.getText().toString().trim())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                dialogInterface.dismiss();
+                                waitingDialog.dismiss();
+
+                                Snackbar.make(rootLyout, "Reset password link has been send",Snackbar.LENGTH_SHORT)
+                                        .show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        dialogInterface.dismiss();
+                        waitingDialog.dismiss();
+
+                        Snackbar.make(rootLyout, ""+e.getMessage(),Snackbar.LENGTH_SHORT)
+                                .show();
+
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton("CANCLE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                dialogInterface.dismiss();
+
+            }
+        });
+        alertDialog.show();
 
     }
 
@@ -137,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         waitingDialog.dismiss();
-                        startActivity(new Intent(MainActivity.this, Welcome.class));
+                        startActivity(new Intent(MainActivity.this, EmployeeHome.class));
                         finish();
 
                     }
