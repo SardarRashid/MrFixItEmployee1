@@ -2,6 +2,8 @@ package com.example.rashidsaddique.mrfixitemployee;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -14,7 +16,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -58,6 +62,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -65,14 +74,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import dmax.dialog.SpotsDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -665,15 +678,130 @@ public class EmployeeHome extends AppCompatActivity
 
         } else if (id == R.id.nav_help) {
 
-        } else if (id == R.id.nav_sign_out) {
+        }else if (id == R.id.nav_setting) {
 
-        } else if (id == R.id.nav_setting) {
+        }
+        else if (id == R.id.nav_change_pwd) {
+            showDialogChangePwd();
+
+        }
+        else if (id == R.id.nav_sign_out) {
+            signOut();
 
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showDialogChangePwd() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(EmployeeHome.this);
+        alertDialog.setTitle("Change Password");
+        alertDialog.setMessage("Please fill all information");
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout_pwd = inflater.inflate(R.layout.layout_change_pwd,null);
+
+        final MaterialEditText edtpassword = (MaterialEditText)layout_pwd.findViewById(R.id.edtPassword);
+        final MaterialEditText edtNewpassword = (MaterialEditText)layout_pwd.findViewById(R.id.edtNewPassword);
+        final MaterialEditText edtRepeatpassword = (MaterialEditText)layout_pwd.findViewById(R.id.edtRepeatPassword);
+
+        alertDialog.setView(layout_pwd);
+
+        //set button
+        alertDialog.setPositiveButton("CHANGE PASSWORD", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+               final android.app.AlertDialog waitingDialog = new SpotsDialog(EmployeeHome.this);
+               waitingDialog.show();
+
+               if (edtNewpassword.getText().toString().equals(edtRepeatpassword.getText().toString()))
+                {
+                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
+                    //get auth creditinals from the user  for re_authentication
+                    //only with email
+
+                    AuthCredential credential = EmailAuthProvider.getCredential(email,edtpassword.getText().toString());
+                    FirebaseAuth.getInstance().getCurrentUser()
+                            .reauthenticate(credential)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful())
+                                    {
+                                        FirebaseAuth.getInstance().getCurrentUser()
+                                                .updatePassword(edtRepeatpassword.getText().toString())
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful())
+                                                        {
+                                                            //Update Employee Information password update
+                                                            Map<String,Object>password = new HashMap<>();
+                                                                    password.put("password",edtRepeatpassword.getText().toString());
+
+                                                            DatabaseReference employeeInformation = FirebaseDatabase.getInstance().getReference(Common.employees_tbl);
+                                                            employeeInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                                    .updateChildren(password)
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            if (task.isSuccessful())
+                                                                                Toast.makeText(EmployeeHome.this, "password changed ..", Toast.LENGTH_SHORT).show();
+                                                                            else
+                                                                                Toast.makeText(EmployeeHome.this, "password was changed but not update to employee information", Toast.LENGTH_SHORT).show();
+                                                                                waitingDialog.dismiss();
+                                                                        }
+                                                                    });
+
+
+                                                        }
+                                                        else
+                                                        {
+                                                            Toast.makeText(EmployeeHome.this, "Password doesn't chnage", Toast.LENGTH_SHORT).show();
+                                                        }
+
+                                                    }
+                                                });
+
+                                    }
+                                    else
+                                    {
+                                        waitingDialog.dismiss();
+                                        Toast.makeText(EmployeeHome.this, "Wrong old Password", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            });
+
+                }
+                else
+                {
+                    waitingDialog.dismiss();
+                    Toast.makeText(EmployeeHome.this, "Password doesn't match", Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+        });
+
+        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+
+    }
+
+    private void signOut() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(EmployeeHome.this,MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
