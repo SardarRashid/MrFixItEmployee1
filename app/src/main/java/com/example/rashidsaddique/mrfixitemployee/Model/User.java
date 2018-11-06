@@ -3,7 +3,7 @@ package com.example.rashidsaddique.mrfixitemployee.Model;
 
 
 public class User {
-    private String email,password,name,phone;
+    private String email,password,name,phone,avtarUrl;
 
 
     public User() {
@@ -14,6 +14,14 @@ public class User {
         this.password = password;
         this.name = name;
         this.phone = phone;
+    }
+
+    public String getAvtarUrl() {
+        return avtarUrl;
+    }
+
+    public void setAvtarUrl(String avtarUrl) {
+        this.avtarUrl = avtarUrl;
     }
 
     public String getEmail() {
