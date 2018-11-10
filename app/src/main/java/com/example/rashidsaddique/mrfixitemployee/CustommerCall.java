@@ -1,17 +1,25 @@
 package com.example.rashidsaddique.mrfixitemployee;
 
 import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.rashidsaddique.mrfixitemployee.Common.Common;
+import com.example.rashidsaddique.mrfixitemployee.Model.FCMResponse;
+import com.example.rashidsaddique.mrfixitemployee.Model.Notification;
+import com.example.rashidsaddique.mrfixitemployee.Model.Sender;
+import com.example.rashidsaddique.mrfixitemployee.Model.Token;
 import com.example.rashidsaddique.mrfixitemployee.Remote.IFCMService;
 import com.example.rashidsaddique.mrfixitemployee.Remote.IGoogleAPI;
 import com.google.android.gms.maps.CameraUpdate;
@@ -37,9 +45,15 @@ import retrofit2.Response;
 public class CustommerCall extends AppCompatActivity {
 
     TextView txtTime,txtAddress,txtDistance;
+    Button btnAccept, btnCancel;
 
     MediaPlayer mediaPlayer;
     IGoogleAPI mServices;
+    IFCMService mFCMService;
+
+    String customerId;
+
+    double lat,lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +61,7 @@ public class CustommerCall extends AppCompatActivity {
         setContentView(R.layout.activity_custommer_call);
 
         mServices = Common.getGoogleAPI();
+        mFCMService = Common.getFCMServices();
 
         //init View
 
@@ -54,18 +69,71 @@ public class CustommerCall extends AppCompatActivity {
         txtDistance = (TextView) findViewById(R.id.txtDistance);
         txtTime = (TextView) findViewById(R.id.txtTime);
 
+        btnAccept = (Button)findViewById(R.id.btnAccept);
+        btnCancel = (Button) findViewById(R.id.btnDecline);
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!TextUtils.isEmpty(customerId))
+                    cancelBooking(customerId);
+
+            }
+        });
+
+        btnAccept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CustommerCall.this,EmployeeTracking.class);
+                //send customer location to new activity employeeTrcking
+                intent.putExtra("lat",lat);
+                intent.putExtra("lng",lng);
+
+                startActivity(intent);
+                finish();
+
+            }
+        });
+
         mediaPlayer = MediaPlayer.create(this, R.raw.ringtone);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
 
         if(getIntent()!= null)
         {
-            double lat = getIntent().getDoubleExtra("lat",-1.0);
-            double lng = getIntent().getDoubleExtra("lng",-1.0);
+            lat = getIntent().getDoubleExtra("lat",-1.0);
+            lng = getIntent().getDoubleExtra("lng",-1.0);
+            customerId = getIntent().getStringExtra("customer");
 
             getDirection(lat,lng);
 
         }
+
+    }
+
+    private void cancelBooking(String customerId) {
+        Token token = new Token(customerId);
+
+        Notification notification = new Notification("Notice","Employee has Cancel Your request");
+        Sender sender = new Sender(token.getToken(),notification);
+
+        mFCMService.sendMessage(sender)
+                .enqueue(new Callback<FCMResponse>() {
+                    @Override
+                    public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                        if(response.body().success==1)
+                        {
+                            Toast.makeText(CustommerCall.this, "Cancelled", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<FCMResponse> call, Throwable t) {
+
+
+                    }
+                });
 
     }
 

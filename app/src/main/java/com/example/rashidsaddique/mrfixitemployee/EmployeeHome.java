@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
@@ -62,6 +63,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -308,6 +310,7 @@ public class EmployeeHome extends AppCompatActivity
                     stopLocationUpdates();
                     mCurrent.remove();
                     mMap.clear();
+                    if(handler != null)
                     handler.removeCallbacks(drawPathRunnable);
                     Snackbar.make(mapFragment.getView(), "You are Off Line", Snackbar.LENGTH_SHORT).show();
                 }
@@ -619,6 +622,7 @@ public class EmployeeHome extends AppCompatActivity
                             mCurrent.remove(); //Remove Already Marker
                         mCurrent = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                                 .title("You"));
 
                         //Move Camera to This position
@@ -661,7 +665,6 @@ public class EmployeeHome extends AppCompatActivity
             }
         });
     }
-
 
 
     private void startLocationUpdates() {
@@ -1012,6 +1015,19 @@ public class EmployeeHome extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        try
+        {
+            boolean isSuccess = googleMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(this,R.raw.style_map)
+            );
+            if(!isSuccess)
+                Log.e("ERROR","Map style load failed..");
+        }
+        catch (Resources.NotFoundException ex)
+        {
+            ex.printStackTrace();
+        }
 
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
