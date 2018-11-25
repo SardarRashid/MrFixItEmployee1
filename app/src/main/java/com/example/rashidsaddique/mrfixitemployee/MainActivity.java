@@ -212,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(AuthResult authResult) {
                         waitingDialog.dismiss();
 
+
                         FirebaseDatabase.getInstance().getReference(Common.employees_tbl)
                                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -223,13 +224,10 @@ public class MainActivity extends AppCompatActivity {
                                         startActivity(new Intent(MainActivity.this, EmployeeHome.class));
                                         finish();
                                     }
-
                                     @Override
                                     public void onCancelled(DatabaseError databaseError) {
-
                                     }
                                 });
-
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override

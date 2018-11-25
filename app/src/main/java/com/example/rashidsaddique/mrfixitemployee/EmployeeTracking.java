@@ -19,9 +19,16 @@ import android.widget.Toast;
 
 import com.example.rashidsaddique.mrfixitemployee.Common.Common;
 import com.example.rashidsaddique.mrfixitemployee.Helper.DirectionJSONParser;
+import com.example.rashidsaddique.mrfixitemployee.Model.FCMResponse;
+import com.example.rashidsaddique.mrfixitemployee.Model.Notification;
+import com.example.rashidsaddique.mrfixitemployee.Model.Sender;
+import com.example.rashidsaddique.mrfixitemployee.Model.Token;
+import com.example.rashidsaddique.mrfixitemployee.Remote.IFCMService;
 import com.example.rashidsaddique.mrfixitemployee.Remote.IGoogleAPI;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,6 +53,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,7 +74,8 @@ public class EmployeeTracking extends FragmentActivity implements OnMapReadyCall
 
     private GoogleMap mMap;
 
-    double custommerlat,custommerlng;
+    double customerlat,customerlng;
+    String customerId;
 
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
 
@@ -84,6 +93,9 @@ public class EmployeeTracking extends FragmentActivity implements OnMapReadyCall
     private Polyline direction;
 
     IGoogleAPI mService;
+    IFCMService mFCMService;
+
+    GeoFire geoFire;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,11 +107,14 @@ public class EmployeeTracking extends FragmentActivity implements OnMapReadyCall
 
         if (getIntent() != null)
         {
-            custommerlat = getIntent().getDoubleExtra("lat",-1.0);
-            custommerlng = getIntent().getDoubleExtra("lng",-1.0);
+            customerlat = getIntent().getDoubleExtra("lat",-1.0);
+            customerlng = getIntent().getDoubleExtra("lng",-1.0);
+            customerId= getIntent().getStringExtra("customerId");
+
 
         }
         mService = Common.getGoogleAPI();
+        mFCMService = Common.getFCMServices();
 
         setUpLocation();
 
@@ -154,11 +169,67 @@ public class EmployeeTracking extends FragmentActivity implements OnMapReadyCall
         mMap = googleMap;
 
         custommerMarker = mMap.addCircle(new CircleOptions()
-                  .center(new LatLng(custommerlat,custommerlng))
-                   .radius(10)
+                  .center(new LatLng(customerlat,customerlng))
+                   .radius(50)
                     .strokeColor(Color.BLUE)
                     .fillColor(0x220000FF)
                     .strokeWidth(5.0f));
+
+        //Create geo fencing for 50m radius
+        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.employees_location_tbl));
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(customerlat,customerlng),0.05f);
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+
+                sendArrivedNotification(customerId);
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+
+
+    }
+
+    private void sendArrivedNotification(String customerId) {
+        Token token = new Token(customerId);
+        Notification notification = new Notification("Arrived",
+                String.format("Employee has arrived at your Location",Common.currentUser.getName()));
+        Sender sender = new Sender(token.getToken(),notification);
+
+
+        mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                if(response.body().success !=1)
+                {
+                    Toast.makeText(EmployeeTracking.this, "Failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FCMResponse> call, Throwable t) {
+
+            }
+        });
 
 
     }
@@ -211,7 +282,7 @@ public class EmployeeTracking extends FragmentActivity implements OnMapReadyCall
                     "mode=driving&"+
                     "transit_routing_preference=less_driving&"+
                     "origin="+currentPosition.latitude+","+currentPosition.longitude+"&"+
-                    "destination="+custommerlat+","+custommerlng+"&"+
+                    "destination="+customerlat+","+customerlng+"&"+
                     "key="+getResources().getString(R.string.google_direction_api);
             Log.d("Mr Fix It",requestApi); //print URL for Debug
             mService.getPath(requestApi)

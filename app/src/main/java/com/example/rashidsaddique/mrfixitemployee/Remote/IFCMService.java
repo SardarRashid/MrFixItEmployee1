@@ -12,7 +12,7 @@ public interface IFCMService {
 
     @Headers({
             "Content-Type:application/jason",
-            "Authorization:key=AAAALlQXs3A:APA91bESl8v16CvOaNrLHcdmzCwKcV-xtriUj3WvnUNcP-vFB2QG-4uxUP__t-sRSIFAMRr60f0s9RLFOHYV4Hk3DMwiw-beRHlYjOzj82bDhluKcB3wqHV97XFrsvM0sv8sysBc1ic_"
+            "Authorization:key=AAAALlQXs3A:APA91bESJsKPCRv8kNH7fQYQ-5Z3VBv5rrORfnNyquA2VVhl85Cxnqk4yIQV9ol9VI8tWkXK1IFEsv5ffsSfz9sShEfQWj18jy70N5gbJlMyievhHGQIUG3oI2RWVzBq6vMUrz5OKfti"
     })
     @POST("fcm/send")
     Call<FCMResponse> sendMessage(@Body Sender body);

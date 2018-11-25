@@ -50,6 +50,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -85,6 +86,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.maps.android.SphericalUtil;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
 
@@ -148,6 +150,7 @@ public class EmployeeHome extends AppCompatActivity
     private int index,next;
     //private Button btnGo;
     private PlaceAutocompleteFragment places;
+    AutocompleteFilter typeFilter;
     private String destination;
     private PolylineOptions polylineOptions,blackPolyLineOptions;
     private Polyline blackPolyLine,greyPolyLine;
@@ -323,6 +326,11 @@ public class EmployeeHome extends AppCompatActivity
 
 
         //Places Api
+        typeFilter = new AutocompleteFilter.Builder()
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .setTypeFilter(3)
+                .build();
+
 
         places = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         places.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -610,6 +618,22 @@ public class EmployeeHome extends AppCompatActivity
             {
                 final double latitude = Common.mLastLocation.getLatitude();
                 final double longitude = Common.mLastLocation.getLongitude();
+
+
+                //Create LatLng from mLastLocation and this is center point
+                LatLng center = new LatLng(latitude,longitude);
+                //distance in metters
+                //heading 0 is north side, 90 is east , 180 is south and 270 is west
+                LatLng northSide = SphericalUtil.computeOffset(center,100000,0);
+                LatLng southSide = SphericalUtil.computeOffset(center,100000,180);
+
+                LatLngBounds bounds = LatLngBounds.builder()
+                        .include(northSide)
+                        .include(southSide)
+                        .build();
+
+                places.setBoundsBias(bounds);
+                places.setFilter(typeFilter);
 
                 //Update to FireBase
 
