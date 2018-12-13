@@ -11,4 +11,9 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_employee_home">EmployeeHome</string>
     <string name="title_activity_employee_tracking">Map</string>
+    <string name="title_activity_work_detail">Map</string>
+    <string name="google_browser_key">AIzaSyBLW8gbRvsMUoKhZwc938GqGKB8o9JO44w</string>
+
+    <string name="FACEBOOK_APP_ID">2209196315994969</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">505a00d484cb1b99774a4b957ae41729</string>
 </resources>

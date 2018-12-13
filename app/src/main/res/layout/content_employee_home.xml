@@ -14,7 +14,8 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".Welcome"/>
+        tools:context=".Welcome"
+        tools:ignore="UnknownId" />
 
     <android.support.v7.widget.CardView
         app:cardMaxElevation="10dp"

@@ -1,42 +1,30 @@
 package com.example.rashidsaddique.mrfixitemployee;
 
-import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.os.Handler;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.rashidsaddique.mrfixitemployee.Common.Common;
+import com.example.rashidsaddique.mrfixitemployee.Model.DataMessage;
 import com.example.rashidsaddique.mrfixitemployee.Model.FCMResponse;
-import com.example.rashidsaddique.mrfixitemployee.Model.Notification;
-import com.example.rashidsaddique.mrfixitemployee.Model.Sender;
 import com.example.rashidsaddique.mrfixitemployee.Model.Token;
 import com.example.rashidsaddique.mrfixitemployee.Remote.IFCMService;
 import com.example.rashidsaddique.mrfixitemployee.Remote.IGoogleAPI;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.JointType;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.SquareCap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,7 +32,7 @@ import retrofit2.Response;
 
 public class CustommerCall extends AppCompatActivity {
 
-    TextView txtTime,txtAddress,txtDistance;
+    TextView txtTime,txtAddress,txtDistance,txtCountDown;
     Button btnAccept, btnCancel;
 
     MediaPlayer mediaPlayer;
@@ -53,7 +41,7 @@ public class CustommerCall extends AppCompatActivity {
 
     String customerId;
 
-    double lat,lng;
+    String lat,lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +56,7 @@ public class CustommerCall extends AppCompatActivity {
         txtAddress = (TextView) findViewById(R.id.txtAddress);
         txtDistance = (TextView) findViewById(R.id.txtDistance);
         txtTime = (TextView) findViewById(R.id.txtTime);
+        txtCountDown = (TextView) findViewById(R.id.txt_count_down);
 
         btnAccept = (Button)findViewById(R.id.btnAccept);
         btnCancel = (Button) findViewById(R.id.btnDecline);
@@ -102,27 +91,51 @@ public class CustommerCall extends AppCompatActivity {
 
         if(getIntent()!= null)
         {
-            lat = getIntent().getDoubleExtra("lat",-1.0);
-            lng = getIntent().getDoubleExtra("lng",-1.0);
+            lat = getIntent().getStringExtra("lat");
+            lng = getIntent().getStringExtra("lng");
             customerId = getIntent().getStringExtra("customer");
 
             getDirection(lat,lng);
 
         }
+        startTimer();
 
+    }
+
+    private void startTimer() {
+   CountDownTimer countDownTimer = new CountDownTimer(30000,1000) {
+       @Override
+       public void onTick(long millisUntilFinished) {
+           txtCountDown.setText(String.valueOf(1/1000));
+
+
+       }
+
+       @Override
+       public void onFinish() {
+           if(!TextUtils.isEmpty(customerId))
+               cancelBooking(customerId);
+           else Toast.makeText(CustommerCall.this, "Customer Id must be not null", Toast.LENGTH_SHORT).show();
+
+       }
+   }.start();
     }
 
     private void cancelBooking(String customerId) {
         Token token = new Token(customerId);
 
-        Notification notification = new Notification("Cancel","Employee has Cancel Your request");
-        Sender sender = new Sender(token.getToken(),notification);
+//        Notification notification = new Notification("Cancel","Employee has Cancel Your request");
+//        Sender sender = new Sender(token.getToken(),notification);
+        Map<String,String>content = new HashMap<>();
+        content.put("title","Cancel");
+        content.put("message","Employee has Cancel Your request");
+        DataMessage dataMessage = new DataMessage(token.getToken(),content);
 
-        mFCMService.sendMessage(sender)
+        mFCMService.sendMessage(dataMessage)
                 .enqueue(new Callback<FCMResponse>() {
                     @Override
                     public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
-                        if(response.body().success==1)
+                        if(response.body().success == 1)
                         {
                             Toast.makeText(CustommerCall.this, "Cancelled", Toast.LENGTH_SHORT).show();
                             finish();
@@ -138,7 +151,7 @@ public class CustommerCall extends AppCompatActivity {
 
     }
 
-    private void getDirection(double lat,double lng) {
+    private void getDirection(String lat,String lng) {
 
         String requestApi = null;
         try {
@@ -203,19 +216,22 @@ public class CustommerCall extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        mediaPlayer.release();
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.release();
         super.onStop();
     }
 
     @Override
     protected void onPause() {
-        mediaPlayer.release();
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.pause();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (mediaPlayer != null && !mediaPlayer.isPlaying())
         mediaPlayer.start();
     }
 }

@@ -3,14 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@drawable/background"
+    android:background="@android:color/holo_blue_light"
     android:layout_height="match_parent"
     android:id="@+id/rootLayout"
     tools:context=".MainActivity">
 
 <LinearLayout
+    android:id="@+id/fixItLogo"
     android:orientation="vertical"
-    android:layout_marginTop="30dp"
+    android:layout_marginTop="250dp"
     android:layout_centerHorizontal="true"
     android:gravity="center_horizontal"
     android:layout_width="wrap_content"
@@ -52,31 +53,41 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:weightSum="2"
+        android:weightSum="1"
         android:layout_above="@+id/txt_forget_password"
         android:layout_margin="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/btnSignIn"
+            android:id="@+id/btnContinue"
             android:background="@drawable/sign_in_btn_background"
             android:textColor="@android:color/white"
-            android:text="SIGN IN"
+            android:text="CONTINUE"
             android:layout_marginRight="6dp"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
+        <!--<Button-->
+            <!--android:id="@+id/btnSignIn"-->
+            <!--android:background="@drawable/sign_in_btn_background"-->
+            <!--android:textColor="@android:color/white"-->
+            <!--android:text="SIGN IN"-->
+            <!--android:layout_marginRight="6dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="wrap_content" />-->
 
-        <Button
-            android:id="@+id/btnRegister"
-            android:background="@drawable/btn_register_background"
-            android:textColor="@color/btnRegister"
-            android:text="REGISTER"
-            android:layout_marginLeft="6dp"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
+        <!--<Button-->
+            <!--android:id="@+id/btnRegister"-->
+            <!--android:background="@drawable/btn_register_background"-->
+            <!--android:textColor="@color/btnRegister"-->
+            <!--android:text="REGISTER"-->
+            <!--android:layout_marginLeft="6dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="wrap_content" />-->
+
     </LinearLayout>
 
 </RelativeLayout>

@@ -7,6 +7,16 @@
     android:background="@android:color/black"
     tools:context=".CustommerCall">
 
+    <TextView
+        android:id="@+id/txt_count_down"
+        android:layout_centerHorizontal="true"
+        android:text="30"
+        android:textSize="50sp"
+        android:textColor="@android:color/white"
+        android:layout_above="@+id/map_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <de.hdodenhof.circleimageview.CircleImageView
         android:id ="@+id/map_img"
         android:layout_width="200dp"
